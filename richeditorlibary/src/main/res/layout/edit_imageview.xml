@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+    <com.cn.pppcar.widget.DataImageView
+        android:id="@+id/edit_imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="fitXY"/>
+
+    <ImageView
+        android:id="@+id/move"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignParentRight="true"
+        android:paddingBottom="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
+        android:background="@color/transparent"
+        android:scaleType="fitXY"
+        android:src="@mipmap/up_down"/>
+
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@color/transparent"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+    >
+        <ImageView
+            android:id="@+id/iv_delete"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="bottom|end"
+            android:paddingBottom="20dp"
+            android:paddingLeft="20dp"
+            android:visibility="gone"
+            android:paddingRight="5dp"
+            android:paddingTop="5dp"
+            android:background="@color/transparent"
+            android:scaleType="fitXY"
+            android:src="@mipmap/delete" />
+
+        <ImageView
+        android:id="@+id/iv_rotate"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom|end"
+        android:paddingBottom="20dp"
+        android:paddingLeft="20dp"
+        android:background="@color/transparent"
+        android:visibility="gone"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
+        android:scaleType="fitXY"
+        android:src="@mipmap/rotate" />
+
+
+        <ImageView
+        android:id="@+id/iv_open"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="bottom|end"
+        android:paddingBottom="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp"
+        android:background="@color/transparent"
+        android:scaleType="fitXY"
+        android:src="@mipmap/open" />
+
+       <!-- <android.support.design.widget.FloatingActionButton
+            android:id="@+id/float_btn_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="20dp"
+            android:layout_marginEnd="10dp"
+            app:borderWidth="0dp"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/delete"
+            app:elevation="5dp"
+            app:fabSize="normal"
+            app:backgroundTint="#0ff"
+            app:rippleColor="@color/transparent"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/float_btn_rotate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="20dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/rotate"
+            app:borderWidth="0dp"
+            app:elevation="5dp"
+            app:backgroundTint="#0ff"
+            app:fabSize="normal"
+            app:rippleColor="@color/transparent"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/float_btn_open"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="20dp"
+            android:layout_marginEnd="10dp"
+            app:borderWidth="0dp"
+            android:layout_marginRight="10dp"
+            app:backgroundTint="#0ff"
+            android:src="@drawable/open"
+            app:elevation="5dp"
+            app:fabSize="normal"
+            app:rippleColor="@color/transparent"/>-->
+
+    </FrameLayout>
+
+</RelativeLayout>
