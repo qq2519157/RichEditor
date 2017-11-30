@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">RichEditor</string>
+    <string name="please_select_picture_src">选择图像来源</string>
+    <string name="please_select_video_src">选择视频来源</string>
+    <string name="from_album">相册</string>
+    <string name="take_photo">拍照</string>
+    <string name="by_camera">摄像</string>
+    <string name="please_wait">请稍等</string>
+    <string name="sure">确定</string>
+    <string name="cancel">取消</string>
 </resources>

@@ -61,6 +61,7 @@ public class RichEditor extends ScrollView {
     private Context mContext;
     private OnClickListener btnRotateListener;
     public static final int ROTATE_IMAGE = 101;
+    public static final int VIDEO_REQUEST = 102;
     private boolean isMenuShow;
     private int type;
 
@@ -205,7 +206,7 @@ public class RichEditor extends ScrollView {
         LinearLayout.LayoutParams firstEditParam = new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         //editNormalPadding = dip2px(EDIT_PADDING);
-        final EditText firstEdit = createEditText("请输入正文", dip2px(context, EDIT_PADDING));
+         final EditText firstEdit = createEditText("请输入正文", dip2px(context, EDIT_PADDING));
         firstEdit.setHintTextColor(getResources().getColor(R.color.main_bg_gray_));
         firstEdit.addTextChangedListener(new SimpleTextWatcher(){
             @Override

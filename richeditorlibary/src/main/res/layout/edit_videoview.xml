@@ -4,7 +4,7 @@
                 android:background="@color/transparent"
     android:layout_height="wrap_content" >
 
-    <com.cn.pppcar.widget.DataVideoView
+    <com.pppcar.richeditorlibary.view.DataVideoView
         android:id="@+id/edit_videoView"
         android:layout_centerInParent="true"
         android:layout_width="match_parent"
