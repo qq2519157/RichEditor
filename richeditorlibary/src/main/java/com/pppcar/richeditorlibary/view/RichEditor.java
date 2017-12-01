@@ -208,19 +208,6 @@ public class RichEditor extends ScrollView {
         //editNormalPadding = dip2px(EDIT_PADDING);
          final EditText firstEdit = createEditText("请输入正文", dip2px(context, EDIT_PADDING));
         firstEdit.setHintTextColor(getResources().getColor(R.color.main_bg_gray_));
-        firstEdit.addTextChangedListener(new SimpleTextWatcher(){
-            @Override
-            public void afterTextChanged(Editable s) {
-                int index = firstEdit.getSelectionStart() - 1;
-                if (index > 0) {
-                    if (SDCardUtil.isEmojiCharacter(s.charAt(index))) {
-                        Editable edit = firstEdit.getText();
-                        edit.delete(s.length() - 2, s.length());
-                        Toast.makeText(mContext, "不支持输入表情符号", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
         allLayout.addDragView(firstEdit, firstEditParam);
         lastFocusEdit = firstEdit;
     }
@@ -364,19 +351,6 @@ public class RichEditor extends ScrollView {
         editText.setPadding(editNormalPadding, paddingTop, editNormalPadding, paddingTop);
         editText.setHint(hint);
         editText.setOnFocusChangeListener(focusListener);
-        editText.addTextChangedListener(new SimpleTextWatcher(){
-            @Override
-            public void afterTextChanged(Editable s) {
-                int index = editText.getSelectionStart() - 1;
-                if (index > 0) {
-                    if (SDCardUtil.isEmojiCharacter(s.charAt(index))) {
-                        Editable edit = editText.getText();
-                        edit.delete(s.length() - 2, s.length());
-                        Toast.makeText(mContext, "不支持输入表情符号", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
         return editText;
     }
 

@@ -4,6 +4,10 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.0"
 
+
+    lintOptions{
+        abortOnError false
+    }
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 23
@@ -19,6 +23,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    task makeJar(type: Copy) {
+        delete 'build/libs/richeditor.jar' //删除已经存在的jar包
+        from('build/intermediates/bundles/release/')//从该目录下加载要打包的文件
+        into('build/libs/')//jar包的保存目录
+        include('classes.jar')//设置过滤，只打包classes文件
+        rename('classes.jar', 'richeditor.jar')//重命名，richeditor.jar 根据自己的需求设置
+    }
+    makeJar.dependsOn(build)
+
 }
 
 dependencies {
