@@ -156,14 +156,7 @@ public class MainActivity extends TakePhotoActivity {
                 mIbVideo.setClickable(hasFocus);
             }
         });
-       /* mDownloadView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mDownloadView.setVisibility(View.GONE);
-                mDownloadView.setProgress(0);
-                mWorkContentContainer.setVisibility(View.VISIBLE);
-            }
-        });*/
+
     }
 
     private void initPermission() {

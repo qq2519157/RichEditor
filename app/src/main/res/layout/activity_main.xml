@@ -11,6 +11,7 @@
 
 
     <LinearLayout
+        android:id="@+id/tool_container"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
@@ -36,7 +37,8 @@
     </LinearLayout>
     <com.pppcar.richeditorlibary.view.RichEditor
         android:id="@+id/rich_et"
+        android:layout_above="@id/tool_container"
         android:layout_width="match_parent"
         android:layout_centerInParent="true"
-        android:layout_height="400dp"/>
+        android:layout_height="match_parent"/>
 </RelativeLayout>
