@@ -1,7 +1,7 @@
 # RichEditor
 富文本编辑器,可添加视频和图片,带图片拖动功能
 
-![image](http://image.pppcar.com/fly.gif)
+![img](http://image.pppcar.com/fly.gif)
 
 Step 1. Add the JitPack repository to your build file
 
