@@ -1,6 +1,7 @@
 *.iml
 .gradle
-/local.properties
+# Local configuration file (sdk path, etc)
+local.properties
 /.idea/workspace.xml
 /.idea/libraries
 .DS_Store
