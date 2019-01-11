@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="richEditor" type="id">123</item>
+    <item name="richEditor" type="id"/>
 </resources>

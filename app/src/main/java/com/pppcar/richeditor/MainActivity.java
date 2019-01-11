@@ -35,7 +35,7 @@ import com.pppcar.richeditorlibary.view.RichEditor;
 
 import java.io.File;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import rx.Observable;
@@ -47,11 +47,11 @@ import rx.schedulers.Schedulers;
 
 public class MainActivity extends TakePhotoActivity {
 
-    @Bind(R.id.ib_pic)
+    @BindView(R.id.ib_pic)
     ImageButton mIbPic;
-    @Bind(R.id.ib_video)
+    @BindView(R.id.ib_video)
     ImageButton mIbVideo;
-    @Bind(R.id.rich_et)
+    @BindView(R.id.rich_et)
     RichEditor mContent;
     private ProgressDialog insertDialog;
     private boolean hasPermission;
