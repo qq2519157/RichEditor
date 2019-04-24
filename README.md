@@ -3,6 +3,7 @@
 [![Release Version][5]][6]
 [![API][3]][4]
 [![PRs Welcome][7]][8]
+[![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
 ***
  * ### 介绍
     富文本编辑器,可添加视频和图片,带图片拖动功能
