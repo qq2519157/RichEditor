@@ -3,7 +3,7 @@ package com.pppcar.richeditorlibary.view;
 import android.content.Context;
 import android.util.AttributeSet;
 
-import cn.jzvd.JZVideoPlayerStandard;
+import cn.jzvd.JzvdStd;
 
 /**
  * 作者:  Logan on 2017/11/30.
@@ -11,7 +11,7 @@ import cn.jzvd.JZVideoPlayerStandard;
  * 描述:  带数据的视频播放器
  */
 
-public class DataVideoView extends JZVideoPlayerStandard {
+public class DataVideoView extends JzvdStd {
     private String absolutePath;
     private String  url;
 

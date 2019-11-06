@@ -13,20 +13,20 @@
    #### Gradle:
      在你的module的build.gradle文件
      ```
-        implementation 'com.log1992:richeditorlibary:1.0.0'
+        implementation 'com.log1992:richeditorlibary:1.0.1'
      ```
    ### Maven:
      ```
         <dependency>
         <groupId>com.log1992</groupId>
         <artifactId>richeditorlibary</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
         <type>pom</type>
         </dependency>
      ```
    ### Lvy
      ```
-        <dependency org='com.log1992' name='richeditorlibary' rev='1.0.0'>
+        <dependency org='com.log1992' name='richeditorlibary' rev='1.0.1'>
          <artifact name='richeditorlibary' ext='pom' ></artifact>
         </dependency>
      ```
@@ -41,10 +41,11 @@
      ***
  * ### 引入的库：
     ```
-        compile 'com.android.support:appcompat-v7:28.0.0'
-        testCompile 'junit:junit:4.12'
-        compile 'cn.jzvd:jiaozivideoplayer:6.0.2'
-        compile 'com.github.bumptech.glide:glide:3.6.0'
+        implementation 'androidx.appcompat:appcompat:1.1.0'
+        testImplementation 'junit:junit:4.12'
+        implementation 'cn.jzvd:jiaozivideoplayer:7.0.5'
+        implementation 'com.github.bumptech.glide:glide:4.10.0'
+        annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
     ```
     ***
  * ### 使用方法
@@ -76,7 +77,7 @@
 [2]:https://www.apache.org/licenses/LICENSE-2.0.html
 [3]:https://img.shields.io/badge/API-17%2B-red.svg?style=flat
 [4]:https://android-arsenal.com/api?level=17
-[5]:https://img.shields.io/badge/release-1.0.0-red.svg
+[5]:https://img.shields.io/badge/release-1.0.1-red.svg
 [6]:https://github.com/qq2519157/RichEditor/releases
 [7]:https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 [8]:https://github.com/qq2519157/RichEditor/pulls
