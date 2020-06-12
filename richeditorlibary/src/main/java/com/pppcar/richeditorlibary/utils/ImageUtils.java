@@ -25,6 +25,7 @@ import java.io.InputStream;
  * 邮箱:  490636907@qq.com
  * 描述:  图片处理工具类
  */
+@SuppressWarnings({"deprecation", "unused", "IntegerDivisionInFloatingPointContext", "UnnecessaryLocalVariable", "ResultOfMethodCallIgnored"})
 public class ImageUtils {
     private static final String SAVE_PIC_PATH = Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED) ? Environment.getExternalStorageDirectory().getAbsolutePath() : "/mnt/sdcard";
     public static final String SAVE_REAL_PATH = SAVE_PIC_PATH + "/good/RotatePic/";//保存的确切位置
@@ -35,13 +36,12 @@ public class ImageUtils {
         BitmapFactory.Options options = null;
         if (size > 0) {
             BitmapFactory.Options info = new BitmapFactory.Options();
-            /**如果设置true的时候，decode时候Bitmap返回的为数据将空*/
+            /*如果设置true的时候，decode时候Bitmap返回的为数据将空*/
             info.inJustDecodeBounds = false;
             decodeBitmap(path, data, context, uri, info);
             int dim = info.outWidth;
-            if (!width) dim = Math.max(dim, info.outHeight);
             options = new BitmapFactory.Options();
-            /**把图片宽高读取放在Options里*/
+            /*把图片宽高读取放在Options里*/
             options.inSampleSize = size;
         }
         Bitmap bm = null;
@@ -65,11 +65,13 @@ public class ImageUtils {
             result = BitmapFactory.decodeByteArray(data, 0, data.length, options);
         } else if (uri != null) {
             ContentResolver cr = context.getContentResolver();
-            InputStream inputStream = null;
+            InputStream inputStream;
             try {
                 inputStream = cr.openInputStream(uri);
                 result = BitmapFactory.decodeStream(inputStream, null, options);
-                inputStream.close();
+                if (inputStream != null) {
+                    inputStream.close();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -80,9 +82,6 @@ public class ImageUtils {
 
     /**
      * 把bitmap转换成String
-     *
-     * @param filePath
-     * @return
      */
     public static String bitmapToString(String filePath) {
 
@@ -98,11 +97,6 @@ public class ImageUtils {
 
     /**
      * 计算图片的缩放值
-     *
-     * @param options
-     * @param reqWidth
-     * @param reqHeight
-     * @return
      */
     public static int calculateInSampleSize(BitmapFactory.Options options,
                                             int reqWidth, int reqHeight) {
@@ -122,7 +116,7 @@ public class ImageUtils {
             // guarantee
             // a final image with both dimensions larger than or equal to the
             // requested height and width.
-            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+            inSampleSize = Math.min(heightRatio, widthRatio);
         }
 
         return inSampleSize;
@@ -130,8 +124,6 @@ public class ImageUtils {
 
     /**
      * 根据路径获得突破并压缩返回bitmap用于显示
-     *
-     * @return
      */
     public static Bitmap getSmallBitmap(String filePath, int newWidth, int newHeight) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -146,49 +138,12 @@ public class ImageUtils {
 
         Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
         Bitmap newBitmap = compressImage(bitmap, 500);
-        if (bitmap != null){
-            bitmap.recycle();
-        }
+        bitmap.recycle();
         return newBitmap;
     }
 
     /**
-     * 根据view的宽度，动态缩放bitmap尺寸
-     *
-     * @param width
-     *            view的宽度
-     */
-//    public Bitmap getScaledBitmap(String filePath, int width) {
-//        BitmapFactory.Options options = new BitmapFactory.Options();
-//        options.inJustDecodeBounds = true;
-//        BitmapFactory.decodeFile(filePath, options);
-//        int sampleSize = options.outWidth > width ? options.outWidth / width
-//                + 1 : 1;
-//        options.inJustDecodeBounds = false;
-//        options.inSampleSize = sampleSize;
-//        return BitmapFactory.decodeFile(filePath, options);
-//    }
-
-    /**
-     * 对图片进行按比例设置
-     * @param bitmap 要处理的图片
-     * @return 返回处理好的图片
-     */
-//    public static Bitmap getScaleBitmap(Bitmap bitmap, float widthScale, float heightScale){
-//        Matrix matrix = new Matrix();
-//        matrix.postScale(widthScale, heightScale);
-//        if(bitmap == null){
-//            return null;
-//        }
-//        Bitmap resizeBmp  =
-//                Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-//        return resizeBmp;
-//    }
-
-    /**
      * 根据路径删除图片
-     *
-     * @param path
      */
     public static void deleteTempFile(String path) {
         File file = new File(path);
@@ -201,9 +156,9 @@ public class ImageUtils {
      * 获取视频第一帧图片
      */
     public static Bitmap getFirstImg(String videoPath) {
-        /**
-         * MediaMetadataRetriever class provides a unified interface for retrieving
-         * frame and meta data from an input media file.
+        /*
+          MediaMetadataRetriever class provides a unified interface for retrieving
+          frame and meta data from an input media file.
          */
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
         mmr.setDataSource(videoPath);
@@ -277,16 +232,12 @@ public class ImageUtils {
 
     /**
      * 通过像素压缩图片，将修改图片宽高，适合获得缩略图，Used to get thumbnail
-     * @param srcPath
-     * @return
      */
     public static Bitmap compressBitmapByPath(String srcPath, float pixelW, float pixelH) {
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;
         newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
-        Bitmap bitmap = BitmapFactory.decodeFile(srcPath,newOpts);//此时返回bm为空
-
         newOpts.inJustDecodeBounds = false;
         int w = newOpts.outWidth;
         int h = newOpts.outHeight;
@@ -304,17 +255,13 @@ public class ImageUtils {
             be = 1;
         newOpts.inSampleSize = be;//设置缩放比例
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
-        bitmap = BitmapFactory.decodeFile(srcPath, newOpts);
+        Bitmap bitmap = BitmapFactory.decodeFile(srcPath, newOpts);
         //        return compress(bitmap, maxSize); // 这里再进行质量压缩的意义不大，反而耗资源，删除
         return bitmap;
     }
 
     /**
      * 通过大小压缩，将修改图片宽高，适合获得缩略图，Used to get thumbnail
-     * @param image
-     * @param pixelW
-     * @param pixelH
-     * @return
      */
     public static Bitmap compressBitmapByBmp(Bitmap image, float pixelW, float pixelH) {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -323,12 +270,11 @@ public class ImageUtils {
             os.reset();//重置baos即清空baos
             image.compress(Bitmap.CompressFormat.JPEG, 50, os);//这里压缩50%，把压缩后的数据存放到baos中
         }
-        ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+        ByteArrayInputStream is ;
         BitmapFactory.Options newOpts = new BitmapFactory.Options();
         //开始读入图片，此时把options.inJustDecodeBounds 设回true了
         newOpts.inJustDecodeBounds = true;
         newOpts.inPreferredConfig = Bitmap.Config.RGB_565;
-        Bitmap bitmap = BitmapFactory.decodeStream(is, null, newOpts);
         newOpts.inJustDecodeBounds = false;
         int w = newOpts.outWidth;
         int h = newOpts.outHeight;
@@ -345,10 +291,12 @@ public class ImageUtils {
         newOpts.inSampleSize = be;//设置缩放比例
         //重新读入图片，注意此时已经把options.inJustDecodeBounds 设回false了
         is = new ByteArrayInputStream(os.toByteArray());
-        bitmap = BitmapFactory.decodeStream(is, null, newOpts);
-        int desWidth = (int) (w / be);
-        int desHeight = (int) (h / be);
-        bitmap = Bitmap.createScaledBitmap(bitmap, desWidth, desHeight, true);
+        Bitmap bitmap = BitmapFactory.decodeStream(is, null, newOpts);
+        int desWidth = w / be;
+        int desHeight = h / be;
+        if (bitmap != null) {
+            bitmap = Bitmap.createScaledBitmap(bitmap, desWidth, desHeight, true);
+        }
         //压缩好比例大小后再进行质量压缩
 //      return compress(bitmap, maxSize); // 这里再进行质量压缩的意义不大，反而耗资源，删除
         return bitmap;
@@ -356,8 +304,6 @@ public class ImageUtils {
 
     /**
      * 质量压缩
-     * @param image
-     * @param maxSize
      */
     public static Bitmap compressImage(Bitmap image, int maxSize){
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -385,10 +331,6 @@ public class ImageUtils {
 
     /**
      * 对图片进行缩放
-     * @param bgimage
-     * @param newWidth
-     * @param newHeight
-     * @return
      */
     public static Bitmap zoomImage(Bitmap bgimage, double newWidth, double newHeight) {
 //        //使用方式
@@ -424,11 +366,9 @@ public class ImageUtils {
     /** 保存方法 */
     public static String saveBitmap(Bitmap bmp, int index) {
         if (bmp == null) {
-//            showToast("保存出错");
             return "保存出错";
         }
-        // 首先保存图片
-//        File appDir = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/", "pppcar");
+
         File appDir = new File(SAVE_REAL_PATH);
         if (!appDir.exists()) {
             appDir.mkdirs();

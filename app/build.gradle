@@ -4,7 +4,7 @@ android {
     compileSdkVersion 29
     defaultConfig {
         applicationId "com.pppcar.richeditor"
-        minSdkVersion 17
+        minSdkVersion 21
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -31,11 +31,12 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     implementation 'androidx.appcompat:appcompat:1.1.0'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13'
     implementation 'com.jakewharton:butterknife:10.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:10.2.0'
-    implementation ('com.jph.takephoto:takephoto_library:4.0.3',{
-        exclude group: 'com.android.support',module: 'support-v4'
-    })
+    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.5.8'
+    implementation 'com.yanzhenjie:permission:2.0.3'
     implementation project(path: ':richeditorlibary')
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.4'
 }

@@ -716,7 +716,7 @@ public class RichEditor extends ScrollView {
         /*videoView.setVideoPath(videoPath);
         videoView.setMediaController(new MediaController(mContext));*/
         videoView.setUp(videoPath, "", Jzvd.SCREEN_NORMAL);
-        Glide.with(mContext).load(firstImgUrl).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(videoView.thumbImageView);
+        Glide.with(mContext).load(firstImgUrl).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(videoView.posterImageView);
         videoView.setAbsolutePath(videoPath);//保留这句，后面保存数据会用
 
         // 调整imageView的高度，根据宽度来调整高度

@@ -9,12 +9,11 @@ import android.view.View;
 import android.view.WindowManager;
 
 
+@SuppressWarnings("unused")
 public class ScreenUtils {
 
     /**
      * 获得屏幕宽度
-     * @param context
-     * @return
      */
     public static int getScreenWidth(Context context)
     {
@@ -26,8 +25,6 @@ public class ScreenUtils {
 
     /**
      * 获得屏幕高度
-     * @param context
-     * @return
      */
     public static int getScreenHeight(Context context) {
         WindowManager wm = (WindowManager) context
@@ -39,8 +36,6 @@ public class ScreenUtils {
 
     /**
      * 获得状态栏高度
-     * @param context
-     * @return
      */
     public static int getStatusHeight(Context context) {
         int statusHeight = -1;

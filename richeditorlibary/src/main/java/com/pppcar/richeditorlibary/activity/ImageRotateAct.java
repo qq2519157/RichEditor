@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -82,46 +81,33 @@ public class ImageRotateAct extends Activity {
     }
 
     private void initEvent() {
-        mRotate.setOnClickListener(new View.OnClickListener() {
+        mRotate.setOnClickListener(v -> {
+            if (mSmallBitmap != null) {
+                int orientationDegree = 90 ;
+                Bitmap newBitmap = adjustPhotoRotation(mSmallBitmap, orientationDegree);
+                mPic.setImageBitmap(newBitmap);
+                mSmallBitmap = newBitmap;
+            }
+        });
 
-            @Override
-            public void onClick(View v) {
-                if (mSmallBitmap != null) {
-                    int orientationDegree = 90 ;
-                    Bitmap newBitmap = adjustPhotoRotation(mSmallBitmap, orientationDegree);
-                    mPic.setImageBitmap(newBitmap);
-                    mSmallBitmap = newBitmap;
+        mSure.setOnClickListener(v -> {
+            if (mSmallBitmap != null) {
+                String s = ImageUtils.saveBitmap(mSmallBitmap, mIndex);
+                if ("保存出错".equals(s)) {
+                    Toast.makeText(ImageRotateAct.this, "临时图片保存出错", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent=new Intent();
+                    intent.putExtra("index",mIndex);
+                    intent.putExtra("imagePath",s);
+                    setResult(RESULT_OK,intent);
                 }
+                finish();
             }
+
+
         });
 
-        mSure.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mSmallBitmap != null) {
-                    String s = ImageUtils.saveBitmap(mSmallBitmap, mIndex);
-                    if ("保存出错".equals(s)) {
-                        Toast.makeText(ImageRotateAct.this, "临时图片保存出错", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        Intent intent=new Intent();
-                        intent.putExtra("index",mIndex);
-                        intent.putExtra("imagePath",s);
-                        setResult(RESULT_OK,intent);
-                        finish();
-                    }
-                }
-
-
-            }
-        });
-
-        mCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onBackPressed();
-            }
-        });
+        mCancel.setOnClickListener(v -> onBackPressed());
 
     }
 

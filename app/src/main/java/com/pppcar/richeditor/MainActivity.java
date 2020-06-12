@@ -1,16 +1,12 @@
 package com.pppcar.richeditor;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -22,30 +18,37 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.jph.takephoto.app.TakePhoto;
-import com.jph.takephoto.app.TakePhotoActivity;
-import com.jph.takephoto.model.TImage;
-import com.jph.takephoto.model.TResult;
+import com.luck.picture.lib.PictureSelector;
+import com.luck.picture.lib.config.PictureConfig;
+import com.luck.picture.lib.config.PictureMimeType;
+import com.luck.picture.lib.entity.LocalMedia;
 import com.pppcar.richeditorlibary.utils.ImageUtils;
 import com.pppcar.richeditorlibary.utils.UriUtil;
 import com.pppcar.richeditorlibary.view.DataImageView;
 import com.pppcar.richeditorlibary.view.RichEditor;
+import com.yanzhenjie.permission.AndPermission;
+import com.yanzhenjie.permission.runtime.Permission;
 
 import java.io.File;
+import java.util.List;
 
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import rx.Observable;
-import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
-public class MainActivity extends TakePhotoActivity {
+public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CODE_CHOOSE_IMAGE = 10086;
+    private static final int REQUEST_CODE_CHOOSE_VIDEO = 10010;
     @BindView(R.id.ib_pic)
     ImageButton mIbPic;
     @BindView(R.id.ib_video)
@@ -53,16 +56,12 @@ public class MainActivity extends TakePhotoActivity {
     @BindView(R.id.rich_et)
     RichEditor mContent;
     private ProgressDialog insertDialog;
-    private boolean hasPermission;
-    private TakePhoto mTakePhoto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        initPermission();
-        mTakePhoto = getTakePhoto();
         initView();
         initEvent();
     }
@@ -71,15 +70,32 @@ public class MainActivity extends TakePhotoActivity {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.ib_pic:
-                if (hasPermission) {
-                    uploadImage();
-                }
+                AndPermission.with(this)
+                        .runtime()
+                        .permission(Permission.READ_EXTERNAL_STORAGE, Permission.CAMERA)
+                        .onGranted(permissions -> {
+                            // Storage permission are allowed.
+                            uploadImage();
+                        })
+                        .onDenied(permissions -> {
+                            // Storage permission are not allowed.
+                            Toast.makeText(this, "请在应用权限管理中打开权限", Toast.LENGTH_SHORT).show();
+                        })
+                        .start();
                 break;
             case R.id.ib_video:
-                if (hasPermission) {
-                    uploadVideo();
-                }
-                break;
+                AndPermission.with(this)
+                        .runtime()
+                        .permission(Permission.READ_EXTERNAL_STORAGE, Permission.CAMERA)
+                        .onGranted(permissions -> {
+                            // Storage permission are allowed.
+                            uploadVideo();
+                        })
+                        .onDenied(permissions -> {
+                            // Storage permission are not allowed.
+                            Toast.makeText(this, "请在应用权限管理中打开权限", Toast.LENGTH_SHORT).show();
+                        })
+                        .start();
         }
     }
 
@@ -91,19 +107,18 @@ public class MainActivity extends TakePhotoActivity {
             int tag = (Integer) v.getTag();
             switch (tag) {
                 case PictureSelecctDialog.FROM_ALBUM:
-                    mTakePhoto.onPickFromGallery();
+                    PictureSelector.create(this)
+                            .openGallery(PictureMimeType.ofImage())
+                            .imageEngine(GlideEngine.createGlideEngine())
+                            .selectionMode(PictureConfig.MULTIPLE)
+                            .forResult(REQUEST_CODE_CHOOSE_IMAGE);
                     break;
                 case PictureSelecctDialog.TAKE_PICTURE:
-                    File file = new File(Environment.getExternalStorageDirectory(), "/temp/" + System.currentTimeMillis() + ".jpg");
-                    File parentFile = file.getParentFile();
-                    if (parentFile != null) {
-                        if (!parentFile.exists()) {
-                            boolean mkdirs = parentFile.mkdirs();
-                            Log.e(MainActivity.class.getSimpleName(), mkdirs ? "create success" : "create failed");
-                        }
-                        Uri imageUri = Uri.fromFile(file);
-                        mTakePhoto.onPickFromCapture(imageUri);
-                    }
+                    PictureSelector.create(this)
+                            .openCamera(PictureMimeType.ofImage())
+                            .imageEngine(GlideEngine.createGlideEngine())
+                            .isPreviewImage(true)
+                            .forResult(REQUEST_CODE_CHOOSE_IMAGE);
                     break;
                 default:
                     break;
@@ -121,15 +136,18 @@ public class MainActivity extends TakePhotoActivity {
             int tag = (Integer) v.getTag();
             switch (tag) {
                 case VideoSelecctDialog.FROM_ALBUM:
-                    Intent intent = new Intent();
-                    intent.setType("video/*"); //选择视频（mp4 3gp 是android支持的视频格式）
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(intent, RichEditor.VIDEO_REQUEST);
+                    PictureSelector.create(this)
+                            .openGallery(PictureMimeType.ofVideo())
+                            .imageEngine(GlideEngine.createGlideEngine())
+                            .selectionMode(PictureConfig.SINGLE)
+                            .forResult(REQUEST_CODE_CHOOSE_VIDEO);
                     break;
                 case VideoSelecctDialog.BY_CAMERA:
-                    Intent camera = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                    camera.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
-                    startActivityForResult(camera, RichEditor.VIDEO_REQUEST);
+                    PictureSelector.create(this)
+                            .openCamera(PictureMimeType.ofVideo())
+                            .imageEngine(GlideEngine.createGlideEngine())
+                            .selectionMode(PictureConfig.SINGLE)
+                            .forResult(REQUEST_CODE_CHOOSE_VIDEO);
                     break;
                 default:
                     break;
@@ -154,87 +172,6 @@ public class MainActivity extends TakePhotoActivity {
 
     }
 
-    private void initPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            //第二个参数是需要申请的权限
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.CAMERA)
-                    == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                //权限已经被授予，在这里直接写要执行的相应方法即可
-                hasPermission = true;
-            } else {
-                //权限还没有授予，需要在这里写申请权限的代码
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE},
-                        1);
-            }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //第二个参数是需要申请的权限
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.CAMERA)
-                    == PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-                //权限已经被授予，在这里直接写要执行的相应方法即可
-                hasPermission = true;
-            } else {
-                //权限还没有授予，需要在这里写申请权限的代码
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 2);
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.CAMERA}, 2);
-            }
-        } else {
-            hasPermission = true;
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                hasPermission = true;
-            } else {
-                // Permission Denied
-                Toast.makeText(this, "请在应用权限管理中打开权限", Toast.LENGTH_SHORT).show();
-            }
-        }
-        if (requestCode == 2) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                hasPermission = true;
-
-            } else {
-                // Permission Denied
-                Toast.makeText(this, "请在应用权限管理中打开权限", Toast.LENGTH_SHORT).show();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    @Override
-    public void takeSuccess(TResult result) {
-        super.takeSuccess(result);
-        if (result.getImages() == null || result.getImages().size() == 0) {
-            return;
-        }
-        //可以在这里选择上传至服务器得到url再加载url
-        for (TImage tImage : result.getImages()) {
-            String path = tImage.getOriginalPath();
-            insertImagesSync(path);
-        }
-    }
-
-    @Override
-    public void takeFail(TResult result, String msg) {
-        super.takeFail(result, msg);
-    }
-
-    @Override
-    public void takeCancel() {
-        super.takeCancel();
-    }
 
     /**
      * 异步方式插入图片
@@ -243,25 +180,23 @@ public class MainActivity extends TakePhotoActivity {
      */
     private void insertImagesSync(final String imagePath) {
         insertDialog.show();
-
-        Observable.create((Observable.OnSubscribe<String>) subscriber -> {
+        Observable.create((ObservableOnSubscribe<String>) subscriber -> {
             try {
 
                 //Log.i("NewActivity", "###imagePath="+imagePath);
                 subscriber.onNext(imagePath);
 
-                subscriber.onCompleted();
+                subscriber.onComplete();
             } catch (Exception e) {
                 e.printStackTrace();
                 subscriber.onError(e);
             }
         })
-                .onBackpressureBuffer()
                 .subscribeOn(Schedulers.io())//生产事件在io
                 .observeOn(AndroidSchedulers.mainThread())//消费事件在UI线程
                 .subscribe(new Observer<String>() {
                     @Override
-                    public void onCompleted() {
+                    public void onComplete() {
                         insertDialog.dismiss();
                         mContent.addEditTextAtIndex(mContent.getLastIndex(), " ");
                         Toast.makeText(MainActivity.this, "图片插入成功", Toast.LENGTH_SHORT).show();
@@ -271,6 +206,11 @@ public class MainActivity extends TakePhotoActivity {
                     public void onError(Throwable e) {
                         insertDialog.dismiss();
                         Toast.makeText(MainActivity.this, "图片插入失败:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+
                     }
 
                     @Override
@@ -288,30 +228,34 @@ public class MainActivity extends TakePhotoActivity {
     private void insertVideosSync(final String videoPath, final String firstImgUrl) {
         insertDialog.show();
 
-        Observable.create((Observable.OnSubscribe<String>) subscriber -> {
+        Observable.create((ObservableOnSubscribe<String>) subscriber -> {
             try {
                 subscriber.onNext(videoPath);
-                subscriber.onCompleted();
+                subscriber.onComplete();
             } catch (Exception e) {
                 e.printStackTrace();
                 subscriber.onError(e);
             }
         })
-                .onBackpressureBuffer()
                 .subscribeOn(Schedulers.io())//生产事件在io
                 .observeOn(AndroidSchedulers.mainThread())//消费事件在UI线程
                 .subscribe(new Observer<String>() {
                     @Override
-                    public void onCompleted() {
+                    public void onError(Throwable e) {
+                        insertDialog.dismiss();
+                        Toast.makeText(MainActivity.this, "视频插入失败:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
                         insertDialog.dismiss();
                         mContent.addEditTextAtIndex(mContent.getLastIndex(), " ");
                         Toast.makeText(MainActivity.this, "视频插入成功", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
-                    public void onError(Throwable e) {
-                        insertDialog.dismiss();
-                        Toast.makeText(MainActivity.this, "视频插入失败:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    public void onSubscribe(@NonNull Disposable d) {
+
                     }
 
                     @Override
@@ -332,13 +276,20 @@ public class MainActivity extends TakePhotoActivity {
 
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-                case RichEditor.VIDEO_REQUEST:
-                    Uri uriVideo = data.getData();
-                    // 转化为路径
-                    String mVideoPath = UriUtil.getPath(this, uriVideo);
-                    Bitmap bitmap = ImageUtils.getFirstImg(mVideoPath);
-                    String firstImgPath = ImageUtils.saveFirstBitmap(bitmap);
-                    insertVideosSync(mVideoPath, firstImgPath);
+                case REQUEST_CODE_CHOOSE_IMAGE:
+                    List<LocalMedia> selectList = PictureSelector.obtainMultipleResult(data);
+                    for (LocalMedia localMedia : selectList) {
+                        insertImagesSync(localMedia.getPath());
+                    }
+                    break;
+                case REQUEST_CODE_CHOOSE_VIDEO:
+                    List<LocalMedia> selectVideoList = PictureSelector.obtainMultipleResult(data);
+                    for (LocalMedia localMedia : selectVideoList) {
+                        String path = localMedia.getPath();
+                        Bitmap bitmap = ImageUtils.getFirstImg(path);
+                        String firstImgPath = ImageUtils.saveFirstBitmap(bitmap);
+                        insertVideosSync(path, firstImgPath);
+                    }
                     break;
                 case RichEditor.ROTATE_IMAGE:
                     String imagePath = data.getStringExtra("imagePath");
@@ -357,7 +308,7 @@ public class MainActivity extends TakePhotoActivity {
                     mContent.hideMenu(open, delete, rotate);
                     DataImageView imageView = (DataImageView) childAt.getChildAt(0);
                     imageView.setAbsolutePath(imagePath);
-                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);//裁剪剧中
+                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);//裁剪居中
                     int imageHeight = allLayout.getWidth() * 3 / 5;
                     //调整图片高度，这里是否有必要，如果出现微博长图，可能会很难看
                     RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
