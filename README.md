@@ -61,6 +61,7 @@
     ***
  * ### 注意
    1. 使用相机权限时请单独处理魅族手机(魅族手机的通病)
+   
    ~~2. 测试demo中接入的4.0.3版本的[TakePhoto](https://github.com/crazycodeboy/TakePhoto)框架
         ```
          compile ('com.jph.takephoto:takephoto_library:4.0.3',{
@@ -68,6 +69,7 @@
             })
         ```
       可能会将其中的support-v4包忽略,4.10版本的takephoto作者换了包名,请自己替换~~
+      
    3. 新Demo依赖如下
       ```
         implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.5.8'
