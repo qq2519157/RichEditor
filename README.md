@@ -76,12 +76,12 @@
    
     ***
  * ### 感谢
-    [lipangit](https://github.com/lipangit)的[JiaoZiVideoPlayer](https://github.com/Jzvd/JZVideo)
+    [Jzvd](https://github.com/Jzvd)的[JZVideo](https://github.com/Jzvd/JZVideo)
     ***
 
 [1]:https://img.shields.io/:license-apache-blue.svg
 [2]:https://www.apache.org/licenses/LICENSE-2.0.html
-[3]:https://img.shields.io/badge/API-17%2B-red.svg?style=flat
+[3]:https://img.shields.io/badge/API-24%2B-red.svg?style=flat
 [4]:https://android-arsenal.com/api?level=24
 [5]:https://img.shields.io/badge/release-2.0.0-red.svg
 [6]:https://github.com/qq2519157/RichEditor/releases
