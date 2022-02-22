@@ -33,7 +33,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.0'
     testImplementation 'junit:junit:4.13.2'
     implementation 'io.github.lucksiege:pictureselector:v3.0.4'
-    //PermissionsDispatcher权限
     implementation "com.github.permissions-dispatcher:permissionsdispatcher:4.8.0"
     annotationProcessor "com.github.permissions-dispatcher:permissionsdispatcher-processor:4.8.0"
     implementation project(path: ':richeditorlibary')
