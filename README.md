@@ -32,20 +32,20 @@
    #### Gradle:
      在你的module的build.gradle文件
      ```
-        implementation 'com.log1992:RichEditor:2.0.0'
+        implementation 'com.log1992:RichEditor:2.0.1'
      ```
    ### Maven:
      ```
        <dependency>
          <groupId>com.log1992</groupId>
          <artifactId>RichEditor</artifactId>
-         <version>2.0.0</version>
+         <version>2.0.1</version>
          <type>aar</type>
       </dependency>
      ```
    ### Lvy
      ```
-       <dependency org="com.log1992" name="RichEditor" rev="2.0.0" />
+       <dependency org="com.log1992" name="RichEditor" rev="2.0.1" />
      ```
   
      ***
@@ -83,7 +83,7 @@
 [2]:https://www.apache.org/licenses/LICENSE-2.0.html
 [3]:https://img.shields.io/badge/API-24%2B-red.svg?style=flat
 [4]:https://android-arsenal.com/api?level=24
-[5]:https://img.shields.io/badge/release-2.0.0-red.svg
+[5]:https://img.shields.io/badge/release-2.0.1-red.svg
 [6]:https://github.com/qq2519157/RichEditor/releases
 [7]:https://img.shields.io/badge/PRs-welcome-brightgreen.svg
 [8]:https://github.com/qq2519157/RichEditor/pulls
