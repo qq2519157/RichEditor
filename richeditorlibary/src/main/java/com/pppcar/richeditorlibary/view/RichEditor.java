@@ -519,8 +519,8 @@ public class RichEditor extends ScrollView {
      * @param imagePath 绝对路径
      */
     public void insertImage(String imagePath, int width) {
-        Bitmap bmp = getScaledBitmap(imagePath, width);
-        insertImage(bmp, imagePath);
+//        Bitmap bmp = getScaledBitmap(imagePath, width);
+        insertImage(imagePath);
     }
 
 

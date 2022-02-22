@@ -1,42 +1,42 @@
 package com.pppcar.richeditor;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.luck.picture.lib.PictureSelector;
-import com.luck.picture.lib.config.PictureConfig;
+import com.luck.picture.lib.app.PictureAppMaster;
+import com.luck.picture.lib.basic.PictureSelector;
 import com.luck.picture.lib.config.PictureMimeType;
+import com.luck.picture.lib.config.SelectMimeType;
+import com.luck.picture.lib.config.SelectModeConfig;
 import com.luck.picture.lib.entity.LocalMedia;
+import com.luck.picture.lib.entity.MediaExtraInfo;
+import com.luck.picture.lib.interfaces.OnResultCallbackListener;
+import com.luck.picture.lib.utils.MediaUtils;
+import com.luck.picture.lib.utils.ToastUtils;
+import com.pppcar.richeditor.databinding.ActivityMainBinding;
 import com.pppcar.richeditorlibary.utils.ImageUtils;
-import com.pppcar.richeditorlibary.utils.UriUtil;
 import com.pppcar.richeditorlibary.view.DataImageView;
 import com.pppcar.richeditorlibary.view.RichEditor;
-import com.yanzhenjie.permission.AndPermission;
-import com.yanzhenjie.permission.runtime.Permission;
 
-import java.io.File;
-import java.util.List;
+import java.util.ArrayList;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.Observable;
@@ -44,59 +44,25 @@ import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjava3.core.Observer;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 
-public class MainActivity extends AppCompatActivity {
+@RuntimePermissions
+public class MainActivity extends AppCompatActivity implements OnResultCallbackListener<LocalMedia> {
 
-    private static final int REQUEST_CODE_CHOOSE_IMAGE = 10086;
-    private static final int REQUEST_CODE_CHOOSE_VIDEO = 10010;
-    @BindView(R.id.ib_pic)
-    ImageButton mIbPic;
-    @BindView(R.id.ib_video)
-    ImageButton mIbVideo;
-    @BindView(R.id.rich_et)
-    RichEditor mContent;
     private ProgressDialog insertDialog;
+    private ActivityMainBinding mBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-        initView();
-        initEvent();
-    }
-
-    @OnClick({R.id.ib_pic, R.id.ib_video})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.ib_pic:
-                AndPermission.with(this)
-                        .runtime()
-                        .permission(Permission.READ_EXTERNAL_STORAGE, Permission.CAMERA)
-                        .onGranted(permissions -> {
-                            // Storage permission are allowed.
-                            uploadImage();
-                        })
-                        .onDenied(permissions -> {
-                            // Storage permission are not allowed.
-                            Toast.makeText(this, "请在应用权限管理中打开权限", Toast.LENGTH_SHORT).show();
-                        })
-                        .start();
-                break;
-            case R.id.ib_video:
-                AndPermission.with(this)
-                        .runtime()
-                        .permission(Permission.READ_EXTERNAL_STORAGE, Permission.CAMERA)
-                        .onGranted(permissions -> {
-                            // Storage permission are allowed.
-                            uploadVideo();
-                        })
-                        .onDenied(permissions -> {
-                            // Storage permission are not allowed.
-                            Toast.makeText(this, "请在应用权限管理中打开权限", Toast.LENGTH_SHORT).show();
-                        })
-                        .start();
-        }
+        mBinding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(mBinding.getRoot());
+        MainActivityPermissionsDispatcher.initViewWithPermissionCheck(this);
     }
 
     /**
@@ -105,26 +71,68 @@ public class MainActivity extends AppCompatActivity {
     public void uploadImage() {
         PictureSelecctDialog pictureSelecctDialog = new PictureSelecctDialog(this, v -> {
             int tag = (Integer) v.getTag();
+            PictureSelector pictureSelector = PictureSelector.create(this);
             switch (tag) {
                 case PictureSelecctDialog.FROM_ALBUM:
-                    PictureSelector.create(this)
-                            .openGallery(PictureMimeType.ofImage())
-                            .imageEngine(GlideEngine.createGlideEngine())
-                            .selectionMode(PictureConfig.MULTIPLE)
-                            .forResult(REQUEST_CODE_CHOOSE_IMAGE);
+                    pictureSelector
+                            .openGallery(SelectMimeType.ofImage())
+                            .setImageEngine(GlideEngine.createGlideEngine())
+                            .setSelectionMode(SelectModeConfig.MULTIPLE)
+                            .forResult(this);
                     break;
                 case PictureSelecctDialog.TAKE_PICTURE:
-                    PictureSelector.create(this)
-                            .openCamera(PictureMimeType.ofImage())
-                            .imageEngine(GlideEngine.createGlideEngine())
-                            .isPreviewImage(true)
-                            .forResult(REQUEST_CODE_CHOOSE_IMAGE);
+                    pictureSelector
+                            .openCamera(SelectMimeType.ofImage())
+                            .isCameraForegroundService(false)
+                            .forResult(this);
                     break;
                 default:
                     break;
             }
         });
         pictureSelecctDialog.show();
+    }
+
+    @OnShowRationale({Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    //给用户解释要请求什么权限，为什么需要此权限
+    public void showRationale(final PermissionRequest request) {
+        new AlertDialog.Builder(MainActivity.this, androidx.appcompat.R.style.Theme_AppCompat_Light_Dialog_Alert)
+                .setMessage("使用此功能需要权限，是否继续请求权限")
+                .setPositiveButton("继续", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        request.proceed();//继续执行请求
+                    }
+                }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                request.cancel();//取消执行请求
+            }
+        })
+                .show();
+    }
+
+    @OnNeverAskAgain({Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    public void multiNeverAsk() {
+        ToastUtils.showToast(this, "权限未授予,部分功能可能无法正常执行");
+        initView();
+    }
+
+    @OnPermissionDenied({Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE})//一旦用户拒绝了
+    public void multiDenied() {
+        ToastUtils.showToast(this, "已拒绝一个或以上权限,可能影响正常使用");
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @androidx.annotation.NonNull String[] permissions, @androidx.annotation.NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
 
@@ -134,20 +142,20 @@ public class MainActivity extends AppCompatActivity {
     public void uploadVideo() {
         VideoSelecctDialog videoSelecctDialog = new VideoSelecctDialog(this, v -> {
             int tag = (Integer) v.getTag();
+            PictureSelector pictureSelector = PictureSelector.create(this);
             switch (tag) {
                 case VideoSelecctDialog.FROM_ALBUM:
-                    PictureSelector.create(this)
-                            .openGallery(PictureMimeType.ofVideo())
-                            .imageEngine(GlideEngine.createGlideEngine())
-                            .selectionMode(PictureConfig.SINGLE)
-                            .forResult(REQUEST_CODE_CHOOSE_VIDEO);
+                    pictureSelector
+                            .openGallery(SelectMimeType.ofVideo())
+                            .setImageEngine(GlideEngine.createGlideEngine())
+                            .setSelectionMode(SelectModeConfig.SINGLE)
+                            .forResult(this);
                     break;
                 case VideoSelecctDialog.BY_CAMERA:
-                    PictureSelector.create(this)
-                            .openCamera(PictureMimeType.ofVideo())
-                            .imageEngine(GlideEngine.createGlideEngine())
-                            .selectionMode(PictureConfig.SINGLE)
-                            .forResult(REQUEST_CODE_CHOOSE_VIDEO);
+                    pictureSelector
+                            .openCamera(SelectMimeType.ofVideo())
+                            .isCameraForegroundService(true)
+                            .forResult(this);
                     break;
                 default:
                     break;
@@ -156,20 +164,25 @@ public class MainActivity extends AppCompatActivity {
         videoSelecctDialog.show();
     }
 
-    private void initView() {
+    @NeedsPermission({Manifest.permission.CAMERA,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    public void initView() {
         insertDialog = new ProgressDialog(this);
         insertDialog.setMessage("正在插入图片...");
         insertDialog.setCanceledOnTouchOutside(false);
+        initEvent();
     }
 
     private void initEvent() {
-        mContent.setOnFocusChangeListener((v, hasFocus) -> {
-            mIbPic.setEnabled(hasFocus);
-            mIbPic.setClickable(hasFocus);
-            mIbVideo.setEnabled(hasFocus);
-            mIbVideo.setClickable(hasFocus);
+        mBinding.richEt.setOnFocusChangeListener((v, hasFocus) -> {
+            mBinding.ibPic.setEnabled(hasFocus);
+            mBinding.ibPic.setClickable(hasFocus);
+            mBinding.ibVideo.setEnabled(hasFocus);
+            mBinding.ibVideo.setClickable(hasFocus);
         });
-
+        mBinding.ibPic.setOnClickListener(v -> uploadImage());
+        mBinding.ibVideo.setOnClickListener(v -> uploadVideo());
     }
 
 
@@ -198,7 +211,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete() {
                         insertDialog.dismiss();
-                        mContent.addEditTextAtIndex(mContent.getLastIndex(), " ");
+                        mBinding.richEt.addEditTextAtIndex(mBinding.richEt.getLastIndex(), " ");
                         Toast.makeText(MainActivity.this, "图片插入成功", Toast.LENGTH_SHORT).show();
                     }
 
@@ -215,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(String imagePath) {
-                        mContent.insertImage(imagePath, mContent.getMeasuredWidth());
+                        mBinding.richEt.insertImage(imagePath, mBinding.richEt.getMeasuredWidth());
                     }
                 });
     }
@@ -249,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onComplete() {
                         insertDialog.dismiss();
-                        mContent.addEditTextAtIndex(mContent.getLastIndex(), " ");
+                        mBinding.richEt.addEditTextAtIndex(mBinding.richEt.getLastIndex(), " ");
                         Toast.makeText(MainActivity.this, "视频插入成功", Toast.LENGTH_SHORT).show();
                     }
 
@@ -260,7 +273,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(String videoPath) {
-                        mContent.insertVideo(videoPath, firstImgUrl);
+                        mBinding.richEt.insertVideo(videoPath, firstImgUrl);
                     }
                 });
     }
@@ -276,21 +289,6 @@ public class MainActivity extends AppCompatActivity {
 
         if (resultCode == Activity.RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_CODE_CHOOSE_IMAGE:
-                    List<LocalMedia> selectList = PictureSelector.obtainMultipleResult(data);
-                    for (LocalMedia localMedia : selectList) {
-                        insertImagesSync(localMedia.getPath());
-                    }
-                    break;
-                case REQUEST_CODE_CHOOSE_VIDEO:
-                    List<LocalMedia> selectVideoList = PictureSelector.obtainMultipleResult(data);
-                    for (LocalMedia localMedia : selectVideoList) {
-                        String path = localMedia.getPath();
-                        Bitmap bitmap = ImageUtils.getFirstImg(path);
-                        String firstImgPath = ImageUtils.saveFirstBitmap(bitmap);
-                        insertVideosSync(path, firstImgPath);
-                    }
-                    break;
                 case RichEditor.ROTATE_IMAGE:
                     String imagePath = data.getStringExtra("imagePath");
                     if (imagePath == null) {
@@ -299,13 +297,13 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("imagePath+++++", imagePath);
                     int index = data.getIntExtra("index", 0);
                     Log.e("index+++++", index + "");
-                    LinearLayout allLayout = (LinearLayout) mContent.getChildAt(0);
+                    LinearLayout allLayout = (LinearLayout) mBinding.richEt.getChildAt(0);
                     RelativeLayout childAt = (RelativeLayout) allLayout.getChildAt(index);
-                    ImageView open = childAt.findViewById(R.id.iv_open);
-                    ImageView rotate = childAt.findViewById(R.id.iv_rotate);
-                    ImageView delete = childAt.findViewById(R.id.iv_delete);
-                    open.setImageResource(R.mipmap.open);
-                    mContent.hideMenu(open, delete, rotate);
+                    ImageView open = childAt.findViewById(com.pppcar.richeditorlibary.R.id.iv_open);
+                    ImageView rotate = childAt.findViewById(com.pppcar.richeditorlibary.R.id.iv_rotate);
+                    ImageView delete = childAt.findViewById(com.pppcar.richeditorlibary.R.id.iv_delete);
+                    open.setImageResource(com.pppcar.richeditorlibary.R.mipmap.open);
+                    mBinding.richEt.hideMenu(open, delete, rotate);
                     DataImageView imageView = (DataImageView) childAt.getChildAt(0);
                     imageView.setAbsolutePath(imagePath);
                     imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);//裁剪居中
@@ -316,12 +314,54 @@ public class MainActivity extends AppCompatActivity {
                     lp.bottomMargin = 10;
                     imageView.setLayoutParams(lp);
                     Glide.with(this).load(imagePath).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(imageView);
-//                    imageView.setImageBitmap(mContent.getScaledBitmap(imagePath, mContent.getMeasuredWidth()));
+//                    imageView.setImageBitmap(mBinding.richEt.getScaledBitmap(imagePath, mBinding.richEt.getMeasuredWidth()));
                     break;
                 default:
                     break;
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onResult(ArrayList<LocalMedia> result) {
+        for (LocalMedia media : result) {
+            if (media.getWidth() == 0 || media.getHeight() == 0) {
+                if (PictureMimeType.isHasImage(media.getMimeType())) {
+                    MediaExtraInfo imageExtraInfo = MediaUtils.getImageSize(media.getPath());
+                    media.setWidth(imageExtraInfo.getWidth());
+                    media.setHeight(imageExtraInfo.getHeight());
+                } else if (PictureMimeType.isHasVideo(media.getMimeType())) {
+                    MediaExtraInfo videoExtraInfo = MediaUtils.getVideoSize(PictureAppMaster.getInstance().getAppContext(), media.getPath());
+                    media.setWidth(videoExtraInfo.getWidth());
+                    media.setHeight(videoExtraInfo.getHeight());
+                }
+            }
+            String path = "";
+            if (media.isCompressed()) {
+                path = media.getCompressPath();
+            } else if (media.isCut()) {
+                path = media.getCutPath();
+            } else if (media.isToSandboxPath()) {
+                path = media.getSandboxPath();
+            } else {
+                path = media.getRealPath();
+            }
+            if (TextUtils.isEmpty(path)) {
+                continue;
+            }
+            if (PictureMimeType.isHasImage(media.getMimeType())) {
+                insertImagesSync(path);
+            } else if (PictureMimeType.isHasVideo(media.getMimeType())) {
+                Bitmap bitmap = ImageUtils.getFirstImg(path);
+                String firstImgPath = ImageUtils.saveFirstBitmap(bitmap);
+                insertVideosSync(path, firstImgPath);
+            }
+        }
+    }
+
+    @Override
+    public void onCancel() {
+
     }
 }
