@@ -6,8 +6,8 @@ plugins {
      * For more information, see
      * Applying external plugins with same version to subprojects.
      */
-     id 'com.android.application' version '7.1.1' apply false
-    id 'com.android.library' version '7.1.1' apply false
+     id 'com.android.application' version '7.1.2' apply false
+    id 'com.android.library' version '7.1.2' apply false
     id 'com.vanniktech.maven.publish' version '0.18.0' apply false
 }
 
