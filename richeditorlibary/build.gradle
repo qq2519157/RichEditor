@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.vanniktech.maven.publish'
+    id 'signing'
 }
 
 group = "com.log1992"
@@ -15,6 +16,44 @@ android {
     compileOptions {
         sourceCompatibility 17
         targetCompatibility 17
+    }
+}
+
+signing {
+    def password = findProperty('signing.password')
+    def keyFile = findProperty('signing.asciiArmoredKeyFile')
+    if (password && keyFile) {
+        def keyText = file(keyFile).text
+        useInMemoryPgpKeys(keyText, password)
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
+    coordinates("com.log1992", "RichEditor", "3.0.0")
+    pom {
+        name = "RichEditor"
+        description = "A rich text editor for Android that supports images, videos, and drag-and-drop."
+        url = "https://github.com/qq2519157/RichEditor"
+        licenses {
+            license {
+                name = "The Apache License, Version 2.0"
+                url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+            }
+        }
+        developers {
+            developer {
+                id = "qq2519157"
+                name = "logan tang"
+                email = "490636907@qq.com"
+            }
+        }
+        scm {
+            url = "https://github.com/qq2519157/RichEditor"
+            connection = "scm:git:git://github.com/qq2519157/RichEditor.git"
+            developerConnection = "scm:git:ssh://git@github.com:qq2519157/RichEditor.git"
+        }
     }
 }
 
