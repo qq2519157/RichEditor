@@ -3,29 +3,27 @@ plugins {
     id 'com.vanniktech.maven.publish'
 }
 
+group = "com.log1992"
+version = "3.0.0"
+
 android {
-    compileSdk 31
+    namespace 'com.pppcar.richeditorlibary'
+    compileSdk 35
     defaultConfig {
         minSdk 24
     }
-}
-
-allprojects {
-    plugins.withId("com.vanniktech.maven.publish") {
-        mavenPublish {
-            sonatypeHost = "S01"
-        }
+    compileOptions {
+        sourceCompatibility 17
+        targetCompatibility 17
     }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    implementation 'androidx.appcompat:appcompat:1.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
     testImplementation 'junit:junit:4.13.2'
-    implementation 'cn.jzvd:jiaozivideoplayer:7.7.0'
-    api 'com.github.bumptech.glide:glide:4.12.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+    implementation 'cn.jzvd:jiaozivideoplayer:7.7.2.3300'
+    api 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+    implementation 'com.blankj:utilcodex:1.31.1'
 }

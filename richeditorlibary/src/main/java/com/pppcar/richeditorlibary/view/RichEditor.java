@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import cn.jzvd.Jzvd;
 
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
@@ -93,46 +94,32 @@ public class RichEditor extends ScrollView {
                 allLayout.removeDragView(firstView);
                 //移除SecondView
                 if (secondView instanceof RelativeLayout) {
-                    if ("image".equals(secondView.getTag(R.id.richEditor))) {
-                        allLayout.removeDragView(secondView);
-                    } else {
-                        allLayout.removeView(secondView);
-                    }
+                    allLayout.removeDragView(secondView);
                 } else {
                     allLayout.removeView(secondView);
                 }
+
+                View firstHandle = getDragHandle(firstView);
+                View secondHandle = getDragHandle(secondView);
+
                 if (firstPosition >= secondPosition) {
                     //底下的View往上拖,先添加firstView
-                    allLayout.addDragView(firstView, firstView.findViewById(R.id.move), secondPosition);
+                    allLayout.addDragView(firstView, firstHandle, secondPosition);
                     //添加SecondView
-                    if (secondView instanceof RelativeLayout) {
-                        if ("image".equals(secondView.getTag(R.id.richEditor))) {
-                            allLayout.addDragView(secondView, secondView.findViewById(R.id.move), firstPosition);
-                        } else {
-//                            allLayout.addView(secondView,firstPosition);
-                            //findViewById(R.id.video_move)
-//                            allLayout.addDragView(secondView,firstPosition);
-                            allLayout.addDragView(secondView, secondView.findViewById(R.id.video_move), firstPosition);
-                        }
+                    if (secondHandle != null) {
+                        allLayout.addDragView(secondView, secondHandle, firstPosition);
                     } else {
-//                        allLayout.addView(secondView,firstPosition);
                         allLayout.addDragView(secondView, firstPosition);
                     }
                 } else {
                     //上面往底下拖,先添加SecondView
-                    if (secondView instanceof RelativeLayout) {
-                        if ("image".equals(secondView.getTag(R.id.richEditor))) {
-                            allLayout.addDragView(secondView, secondView.findViewById(R.id.move), firstPosition);
-                        } else {
-                            allLayout.addDragView(secondView, secondView.findViewById(R.id.video_move), firstPosition);
-                        }
+                    if (secondHandle != null) {
+                        allLayout.addDragView(secondView, secondHandle, firstPosition);
                     } else {
                         allLayout.addDragView(secondView, firstPosition);
                     }
-                    allLayout.addDragView(firstView, firstView.findViewById(R.id.move), secondPosition);
+                    allLayout.addDragView(firstView, firstHandle, secondPosition);
                 }
-
-
             }
         });
         //allLayout.setBackgroundColor(Color.WHITE);
@@ -209,7 +196,7 @@ public class RichEditor extends ScrollView {
                 LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         //editNormalPadding = dip2px(EDIT_PADDING);
         final EditText firstEdit = createEditText("请输入正文", dip2px(context, EDIT_PADDING));
-        firstEdit.setHintTextColor(getResources().getColor(R.color.main_bg_gray_));
+        firstEdit.setHintTextColor(ContextCompat.getColor(getContext(), R.color.main_bg_gray_));
         allLayout.addDragView(firstEdit, firstEditParam);
         lastFocusEdit = firstEdit;
     }
@@ -221,7 +208,22 @@ public class RichEditor extends ScrollView {
         Intent intent = new Intent(mContext, ImageRotateAct.class);
         intent.putExtra("imagePath", path);
         intent.putExtra("index", index);
-        ((Activity) mContext).startActivityForResult(intent, ROTATE_IMAGE);
+        if (imageRotateListener != null) {
+            imageRotateListener.onImageRotate(intent);
+        } else {
+            ((Activity) mContext).startActivityForResult(intent, ROTATE_IMAGE);
+        }
+    }
+
+    private View getDragHandle(View view) {
+        if (view instanceof RelativeLayout) {
+            if ("image".equals(view.getTag(R.id.richEditor))) {
+                return view.findViewById(R.id.move);
+            } else {
+                return view.findViewById(R.id.video_move);
+            }
+        }
+        return null;
     }
 
     /**
@@ -807,5 +809,15 @@ public class RichEditor extends ScrollView {
                     ", videoPath='" + videoPath + '\'' +
                     '}';
         }
+    }
+
+    public interface OnImageRotateListener {
+        void onImageRotate(Intent intent);
+    }
+
+    private OnImageRotateListener imageRotateListener;
+
+    public void setOnImageRotateListener(OnImageRotateListener listener) {
+        this.imageRotateListener = listener;
     }
 }

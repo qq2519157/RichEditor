@@ -15,21 +15,10 @@ import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.luck.picture.lib.engine.ImageEngine;
-import com.luck.picture.lib.interfaces.OnCallbackListener;
 import com.luck.picture.lib.utils.ActivityCompatHelper;
 
-/**
- * Author by logan, Date on 2020/6/11.
- */
 public class GlideEngine implements ImageEngine {
 
-    /**
-     * 加载图片
-     *
-     * @param context   上下文
-     * @param url       资源url
-     * @param imageView 图片承载控件
-     */
     @Override
     public void loadImage(@NonNull Context context, @NonNull String url, @NonNull ImageView imageView) {
         if (!ActivityCompatHelper.assertValidRequest(context)) {
@@ -40,17 +29,8 @@ public class GlideEngine implements ImageEngine {
                 .into(imageView);
     }
 
-    /**
-     * 加载指定url并返回bitmap
-     *
-     * @param context   上下文
-     * @param url       资源url
-     * @param maxWidth  资源最大加载尺寸
-     * @param maxHeight 资源最大加载尺寸
-     * @param call      回调接口
-     */
     @Override
-    public void loadImageBitmap(@NonNull Context context, @NonNull String url, int maxWidth, int maxHeight, OnCallbackListener<Bitmap> call) {
+    public void loadImage(@NonNull Context context, @NonNull ImageView imageView, @NonNull String url, int maxWidth, int maxHeight) {
         if (!ActivityCompatHelper.assertValidRequest(context)) {
             return;
         }
@@ -59,36 +39,21 @@ public class GlideEngine implements ImageEngine {
                 .override(maxWidth, maxHeight)
                 .load(url)
                 .into(new CustomTarget<Bitmap>() {
-
                     @Override
                     public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        if (call != null) {
-                            call.onCall(resource);
-                        }
+                        imageView.setImageBitmap(resource);
                     }
 
                     @Override
                     public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                        if (call != null) {
-                            call.onCall(null);
-                        }
                     }
 
                     @Override
                     public void onLoadCleared(@Nullable Drawable placeholder) {
-
                     }
-
                 });
     }
 
-    /**
-     * 加载相册目录封面
-     *
-     * @param context   上下文
-     * @param url       图片路径
-     * @param imageView 承载图片ImageView
-     */
     @Override
     public void loadAlbumCover(@NonNull Context context, @NonNull String url, @NonNull ImageView imageView) {
         if (!ActivityCompatHelper.assertValidRequest(context)) {
@@ -113,14 +78,6 @@ public class GlideEngine implements ImageEngine {
                 });
     }
 
-
-    /**
-     * 加载图片列表图片
-     *
-     * @param context   上下文
-     * @param url       图片路径
-     * @param imageView 承载图片ImageView
-     */
     @Override
     public void loadGridImage(@NonNull Context context, @NonNull String url, @NonNull ImageView imageView) {
         if (!ActivityCompatHelper.assertValidRequest(context)) {

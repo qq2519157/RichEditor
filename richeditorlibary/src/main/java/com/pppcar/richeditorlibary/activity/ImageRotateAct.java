@@ -3,10 +3,10 @@ package com.pppcar.richeditorlibary.activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -15,28 +15,16 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.pppcar.richeditorlibary.R;
 import com.pppcar.richeditorlibary.utils.ImageUtils;
 import com.pppcar.richeditorlibary.utils.ScreenUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-/**
- * 作者:  Logan on 2017/11/30.
- * 邮箱:  490636907@qq.com
- * 描述:  图片旋转界面
- */
-
-@SuppressWarnings({"deprecation","unused"})
+@SuppressWarnings({"deprecation", "unused"})
 public class ImageRotateAct extends Activity {
 
     private ImageButton mCancel;
@@ -60,7 +48,6 @@ public class ImageRotateAct extends Activity {
 
     private void checkImage(String imagePath) {
         if (mImagePath.contains("content") || mImagePath.contains("storage") || mImagePath.contains("sdcard")) {
-            //本地路径
             int width = ScreenUtils.getScreenWidth(this);
             int height = ScreenUtils.getScreenHeight(this);
             mSmallBitmap = ImageUtils.getSmallBitmap(mImagePath, width, height);
@@ -68,22 +55,25 @@ public class ImageRotateAct extends Activity {
                 mPic.setImageBitmap(mSmallBitmap);
             }
         } else {
-            Glide.with(this).asBitmap().load(imagePath).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).into(new SimpleTarget<Bitmap>() {
-                @Override
-                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                    mSmallBitmap = resource;
-                    mPic.setImageBitmap(resource);
-                }
-            });
-           //方法中设置asBitmap可以设置回调类型
-        }
+            Glide.with(this).asBitmap().load(imagePath).skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE).into(new CustomTarget<Bitmap>() {
+                        @Override
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                            mSmallBitmap = resource;
+                            mPic.setImageBitmap(resource);
+                        }
 
+                        @Override
+                        public void onLoadCleared(@Nullable Drawable placeholder) {
+                        }
+                    });
+        }
     }
 
     private void initEvent() {
         mRotate.setOnClickListener(v -> {
             if (mSmallBitmap != null) {
-                int orientationDegree = 90 ;
+                int orientationDegree = 90;
                 Bitmap newBitmap = adjustPhotoRotation(mSmallBitmap, orientationDegree);
                 mPic.setImageBitmap(newBitmap);
                 mSmallBitmap = newBitmap;
@@ -96,30 +86,25 @@ public class ImageRotateAct extends Activity {
                 if ("保存出错".equals(s)) {
                     Toast.makeText(ImageRotateAct.this, "临时图片保存出错", Toast.LENGTH_SHORT).show();
                 } else {
-                    Intent intent=new Intent();
-                    intent.putExtra("index",mIndex);
-                    intent.putExtra("imagePath",s);
-                    setResult(RESULT_OK,intent);
+                    Intent intent = new Intent();
+                    intent.putExtra("index", mIndex);
+                    intent.putExtra("imagePath", s);
+                    setResult(RESULT_OK, intent);
                 }
                 finish();
             }
-
-
         });
 
         mCancel.setOnClickListener(v -> onBackPressed());
-
     }
-
-
-
-
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mSmallBitmap.recycle();
-        mSmallBitmap=null;
+        if (mSmallBitmap != null && !mSmallBitmap.isRecycled()) {
+            mSmallBitmap.recycle();
+            mSmallBitmap = null;
+        }
     }
 
     private void initView() {
@@ -130,7 +115,6 @@ public class ImageRotateAct extends Activity {
     }
 
     private Bitmap adjustPhotoRotation(Bitmap bm, final int orientationDegree) {
-
         Matrix m = new Matrix();
         m.setRotate(orientationDegree, (float) bm.getWidth() / 2, (float) bm.getHeight() / 2);
         float targetX, targetY;
@@ -157,38 +141,4 @@ public class ImageRotateAct extends Activity {
 
         return bm1;
     }
-
-    /**
-     * 根据图片的url路径获得Bitmap对象
-     *
-     * @param url 图片的url
-     * @return 返回bitmap
-     */
-    private Bitmap decodeUriAsBitmapFromNet(String url) {
-        URL fileUrl = null;
-        Bitmap bitmap = null;
-
-        try {
-            fileUrl = new URL(url);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            if (fileUrl==null) {
-                return null;
-            }
-            HttpURLConnection conn = (HttpURLConnection) fileUrl
-                    .openConnection();
-            conn.setDoInput(true);
-            conn.connect();
-            InputStream is = conn.getInputStream();
-            bitmap = BitmapFactory.decodeStream(is);
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return bitmap;
-    }
-
 }

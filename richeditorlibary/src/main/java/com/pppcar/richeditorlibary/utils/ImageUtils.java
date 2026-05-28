@@ -28,7 +28,15 @@ import java.io.InputStream;
 @SuppressWarnings({"deprecation", "unused", "IntegerDivisionInFloatingPointContext", "UnnecessaryLocalVariable", "ResultOfMethodCallIgnored"})
 public class ImageUtils {
     private static final String SAVE_PIC_PATH = Environment.getExternalStorageState().equalsIgnoreCase(Environment.MEDIA_MOUNTED) ? Environment.getExternalStorageDirectory().getAbsolutePath() : "/mnt/sdcard";
-    public static final String SAVE_REAL_PATH = SAVE_PIC_PATH + "/good/RotatePic/";//保存的确切位置
+    public static final String SAVE_REAL_PATH = SAVE_PIC_PATH + "/good/RotatePic/";
+
+    private static File getSaveDir(Context context) {
+        File dir = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "RotatePic");
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        return dir;
+    }
     /**
      * 图片压缩处理，size参数为压缩比，比如size为2，则压缩为1/4
      **/
@@ -156,28 +164,26 @@ public class ImageUtils {
      * 获取视频第一帧图片
      */
     public static Bitmap getFirstImg(String videoPath) {
-        /*
-          MediaMetadataRetriever class provides a unified interface for retrieving
-          frame and meta data from an input media file.
-         */
         MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(videoPath);
-
-        Bitmap bitmap = mmr.getFrameAtTime();//获取第一帧图片
-        mmr.release();//释放资源
-        return bitmap;
+        try {
+            mmr.setDataSource(videoPath);
+            return mmr.getFrameAtTime();
+        } finally {
+            try {
+                mmr.release();
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     /**
      * 添加到图库
      */
     public static void galleryAddPic(Context context, String path) {
-        Intent mediaScanIntent = new Intent(
-                Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(path);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
-        context.sendBroadcast(mediaScanIntent);
+        android.content.ContentValues values = new android.content.ContentValues();
+        values.put(android.provider.MediaStore.Images.Media.DATA, path);
+        values.put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        context.getContentResolver().insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
     }
 
     //使用Bitmap加Matrix来缩放
@@ -368,76 +374,58 @@ public class ImageUtils {
         if (bmp == null) {
             return "保存出错";
         }
-
         File appDir = new File(SAVE_REAL_PATH);
         if (!appDir.exists()) {
             appDir.mkdirs();
         }
-        String fileName = null;
-        if (appDir.isDirectory()) {
-            fileName = "tempRotate"+index+".jpg";
-            File file = new File(appDir, fileName);
-            if (file.exists()) {
-                file.delete();
-            }
-            try {
-                FileOutputStream fos = new FileOutputStream(file);
-                bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                fos.flush();
-                fos.close();
-            } catch (FileNotFoundException e) {
-//                showToast("文件未发现");
-                e.printStackTrace();
-            } catch (IOException e) {
-//                showToast("保存出错");
-            } catch (Exception e) {
-//                showToast("保存出错");
-                e.printStackTrace();
-            }
-
+        String fileName = "tempRotate" + index + ".jpg";
+        File file = new File(appDir, fileName);
+        if (file.exists()) {
+            file.delete();
         }
-        return SAVE_REAL_PATH+fileName;
-//        return SAVE_REAL_PATH+"tempRotate.jpg";
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file.getAbsolutePath();
     }
 
 
-    /** 保存方法 */
+    /** 保存首帧图片 */
     public static String saveFirstBitmap(Bitmap bmp) {
         if (bmp == null) {
-//            showToast("保存出错");
             return "保存出错";
         }
-        // 首先保存图片
-//        File appDir = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/", "pppcar");
         File appDir = new File(SAVE_REAL_PATH);
         if (!appDir.exists()) {
             appDir.mkdirs();
         }
-        String fileName = null;
-        if (appDir.isDirectory()) {
-            fileName = "firstImg.jpg";
-            File file = new File(appDir, fileName);
-            if (file.exists()) {
-                file.delete();
-            }
-            try {
-                FileOutputStream fos = new FileOutputStream(file);
-                bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-                fos.flush();
-                fos.close();
-            } catch (FileNotFoundException e) {
-//                showToast("文件未发现");
-                e.printStackTrace();
-            } catch (IOException e) {
-//                showToast("保存出错");
-            } catch (Exception e) {
-//                showToast("保存出错");
-                e.printStackTrace();
-            }
-
+        String fileName = "firstImg.jpg";
+        File file = new File(appDir, fileName);
+        if (file.exists()) {
+            file.delete();
         }
-        return SAVE_REAL_PATH+fileName;
-//        return SAVE_REAL_PATH+"tempRotate.jpg";
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return file.getAbsolutePath();
     }
 
 

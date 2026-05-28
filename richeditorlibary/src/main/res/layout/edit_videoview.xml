@@ -29,7 +29,6 @@
         android:id="@+id/video_move"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:paddingBottom="20dp"
